@@ -43,10 +43,10 @@ class PayrollReconciliationScenario(ReconciliationScenario):
     @property
     def dataset1_schema(self) -> List[ColumnDef]:
         return [
-            ColumnDef("EmployeeID", "string", is_key=True),
+            ColumnDef("EmployeeID", "string"),
             ColumnDef("EmployeeName", "string"),
-            ColumnDef("PayPeriod", "string", is_key=True),
-            ColumnDef("PayrollRunID", "string", is_key=True),
+            ColumnDef("PayPeriod", "string"),
+            ColumnDef("PayrollRunID", "string", is_key=True),  # Actual matching key
             ColumnDef("GrossPay", "decimal"),
             ColumnDef("NetPay", "decimal", is_monetary=True),
             ColumnDef("TaxesWithheld", "decimal"),
@@ -56,8 +56,8 @@ class PayrollReconciliationScenario(ReconciliationScenario):
     @property
     def dataset2_schema(self) -> List[ColumnDef]:
         return [
-            ColumnDef("PayPeriod", "string", is_key=True),
-            ColumnDef("JournalID", "string", is_key=True),
+            ColumnDef("PayPeriod", "string"),
+            ColumnDef("JournalID", "string", is_key=True),  # Actual matching key
             ColumnDef("SalaryExpense", "decimal"),
             ColumnDef("TaxExpense", "decimal"),
             ColumnDef("BenefitsExpense", "decimal"),
@@ -141,7 +141,7 @@ class PayrollReconciliationScenario(ReconciliationScenario):
             
             records.append({
                 "PayPeriod": pay_period,
-                "JournalID": match_group_id if split_count == 1 else f"{match_group_id}-{i+1:02d}",
+                "JournalID": match_group_id,
                 "SalaryExpense": gross,
                 "TaxExpense": tax_expense,
                 "BenefitsExpense": benefits,

@@ -39,37 +39,36 @@ print(f'Source rows: {stats.source_rows}')
 print(f'Target rows: {stats.target_rows}')
 print()
 print('MATCH BREAKDOWN:')
-print(f'  Exact 1:1 matches: {stats.exact_1_to_1_matches}')
-print(f'  Exact 1:N matches: {stats.exact_1_to_n_matches}')
-print(f'  Potential matches: {stats.potential_matches}')
+print(f'  Matched exact 1:1: {stats.exact_1_to_1_matches}')
+print(f'  Potential 1:N aggregate: {stats.exact_1_to_n_matches}')
+print(f'  Potential matches total: {stats.potential_matches}')
 print(f'  Unmatched source:  {stats.unmatched_source}')
 print(f'  Unmatched target:  {stats.unmatched_target}')
 print()
 
 # Calculate expected values
-total_exact = stats.exact_1_to_1_matches + stats.exact_1_to_n_matches
 expected_exact = int(100 * 0.60)
-expected_1_to_n = int(expected_exact * 0.30)
-expected_1_to_1 = expected_exact - expected_1_to_n
+expected_potential = int(100 * 0.25)
+expected_1_to_n = int(expected_potential * 0.30)
 
 print('EXPECTED vs ACTUAL:')
-print(f'  Expected exact matches: {expected_exact}, Actual: {total_exact}')
-print(f'  Expected 1:1 matches: {expected_1_to_1}, Actual: {stats.exact_1_to_1_matches}')
-print(f'  Expected 1:N matches: {expected_1_to_n}, Actual: {stats.exact_1_to_n_matches}')
-print(f'  Expected potential: {int(100 * 0.25)}, Actual: {stats.potential_matches}')
+print(f'  Expected matched exact 1:1: {expected_exact}, Actual: {stats.exact_1_to_1_matches}')
+print(f'  Expected potential 1:N: {expected_1_to_n}, Actual: {stats.exact_1_to_n_matches}')
+print(f'  Expected potential total: {expected_potential}, Actual: {stats.potential_matches}')
 print(f'  Expected unmatched: {int(100 * 0.15)}, Actual: {stats.unmatched_source}')
 print()
 
 # Validate 1:N ratio
-if total_exact > 0:
-    actual_1_to_n_ratio = stats.exact_1_to_n_matches / total_exact
+if stats.potential_matches > 0:
+    actual_1_to_n_ratio = stats.exact_1_to_n_matches / stats.potential_matches
     print('1:N RATIO VALIDATION:')
-    print(f'  Configured 1:N ratio: 30%')
+    print(f'  Configured 1:N ratio of potential matches: 30%')
     print(f'  Actual 1:N ratio: {actual_1_to_n_ratio*100:.1f}%')
     print(f'  Within tolerance: {abs(actual_1_to_n_ratio - 0.30) < 0.05}')
 print()
 
-# Group targets by reference prefix
+# Group targets by exact reference. Finance.Copilot groups 1:N records by
+# identical mapping keys; target keys are no longer suffixed per split.
 print('='*60)
 print('VALIDATING 1:N MATCH AMOUNTS SUM CORRECTLY')
 print('='*60)
@@ -77,15 +76,14 @@ print('='*60)
 target_by_ref = defaultdict(list)
 for t in all_target:
     ref = t.get('BankReference', '')
-    parts = ref.split('-')
-    if len(parts) > 1 and parts[-1].isdigit() and len(parts[-1]) == 2:
-        base_ref = '-'.join(parts[:-1])
-        target_by_ref[base_ref].append(t)
-    else:
-        target_by_ref[ref].append(t)
+    target_by_ref[ref].append(t)
 
 # Find 1:N examples
-one_to_n_examples = [(ref, targets) for ref, targets in target_by_ref.items() if len(targets) > 1]
+one_to_n_examples = [
+    (source.get('DocumentNumber'), target_by_ref[source.get('DocumentNumber')])
+    for source in all_source
+    if len(target_by_ref[source.get('DocumentNumber')]) > 1
+]
 
 print(f'Found {len(one_to_n_examples)} 1:N match groups')
 print()

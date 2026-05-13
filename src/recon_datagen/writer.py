@@ -169,15 +169,13 @@ class ExcelWriter:
         stats_sheet.cell(row=row, column=1).font = Font(bold=True, size=12)
         row += 1
         
-        total_matches = stats.exact_1_to_1_matches + stats.exact_1_to_n_matches
         total_source = stats.source_rows
         
         if total_source > 0:
             percentages = [
-                ("Exact Matches", f"{(total_matches / total_source) * 100:.1f}%"),
-                ("  - 1:1 Matches", f"{(stats.exact_1_to_1_matches / total_source) * 100:.1f}%"),
-                ("  - 1:N Matches", f"{(stats.exact_1_to_n_matches / total_source) * 100:.1f}%"),
-                ("Potential Matches", f"{(stats.potential_matches / total_source) * 100:.1f}%"),
+                ("Matched (Exact 1:1)", f"{(stats.exact_1_to_1_matches / total_source) * 100:.1f}%"),
+                ("Potentially Matched", f"{(stats.potential_matches / total_source) * 100:.1f}%"),
+                ("  - Potential 1:N", f"{(stats.exact_1_to_n_matches / total_source) * 100:.1f}%"),
                 ("Unmatched (Source)", f"{(stats.unmatched_source / total_source) * 100:.1f}%"),
             ]
             
@@ -229,7 +227,7 @@ class ExcelWriter:
         row += 1
         stats_sheet.cell(row=row, column=1, value="  2. Compare amount columns for monetary reconciliation")
         row += 1
-        stats_sheet.cell(row=row, column=1, value="  3. For 1:N matches, sum target amounts to match source")
+        stats_sheet.cell(row=row, column=1, value="  3. Core reports 1:N aggregate matches as PotentiallyMatched")
         
         # Add example records section
         row += 3
@@ -313,7 +311,7 @@ class ExcelWriter:
         row += 2
         
         # 1:N Example Section
-        stats_sheet.cell(row=row, column=1, value="1:N Match Example (1 Source → N Targets, amounts must SUM to source)")
+        stats_sheet.cell(row=row, column=1, value="Potential 1:N Example (1 Source -> N Targets, amounts SUM to source)")
         stats_sheet.cell(row=row, column=1).font = Font(bold=True, size=12, color="0000FF")
         stats_sheet.merge_cells(f'A{row}:F{row}')
         row += 1
@@ -368,7 +366,7 @@ class ExcelWriter:
             stats_sheet.cell(row=row, column=2, value=f"Source Amount: {source_amt:.2f}")
             stats_sheet.cell(row=row, column=3, value=f"Target SUM: {target_sum:.2f}")
             match_status = 'YES' if abs(source_amt - target_sum) < 0.01 else 'NO'
-            stats_sheet.cell(row=row, column=4, value=f"SUM Match: {match_status}")
+            stats_sheet.cell(row=row, column=4, value=f"SUM Match: {match_status}; Core bucket: PotentiallyMatched")
             row += 1
             
             # Breakdown
@@ -393,7 +391,7 @@ class ExcelWriter:
         row += 2
         
         # Partial Match Example Section (per MS Copilot Finance docs)
-        stats_sheet.cell(row=row, column=1, value="PARTIAL MATCH Example (Substring Matching per MS Copilot Finance)")
+        stats_sheet.cell(row=row, column=1, value="PARTIAL MATCH Example (Finance.Copilot IsPartialMatch)")
         stats_sheet.cell(row=row, column=1).font = Font(bold=True, size=12, color="800080")  # Purple
         stats_sheet.merge_cells(f'A{row}:F{row}')
         row += 1
@@ -405,7 +403,7 @@ class ExcelWriter:
         
         if stats.example_partial_match_source and stats.example_partial_match_target:
             # Explanation
-            stats_sheet.cell(row=row, column=1, value="Per MS Docs: Partial match = substring match on key + equal amounts → Potentially Matched")
+            stats_sheet.cell(row=row, column=1, value="Partial key match + equal amount -> PotentiallyMatched when the key column is configured as partial")
             stats_sheet.cell(row=row, column=1).font = Font(italic=True)
             stats_sheet.merge_cells(f'A{row}:F{row}')
             row += 2
@@ -442,17 +440,13 @@ class ExcelWriter:
                 stats_sheet.cell(row=row, column=col_idx, value=value)
             row += 2
             
-            # Verification - show the substring relationship
+            # Verification - mirror the core partial matching helper.
             source_ref = stats.example_partial_match_source.get(key_col1, "") if key_col1 else ""
             target_ref = stats.example_partial_match_target.get(key_col2, "") if key_col2 else ""
             source_amt = stats.example_partial_match_source.get(amount_col1, 0) if amount_col1 else 0
             target_amt = stats.example_partial_match_target.get(amount_col2, 0) if amount_col2 else 0
             
-            # Check substring relationship
-            is_superset = str(source_ref) in str(target_ref)
-            is_subset = str(target_ref) in str(source_ref)
-            substring_match = is_superset or is_subset
-            substring_type = "Target contains Source" if is_superset else ("Source contains Target" if is_subset else "N/A")
+            partial_match = self.scenario.is_partial_match(str(source_ref), str(target_ref))
             
             stats_sheet.cell(row=row, column=1, value="✓ VERIFICATION:")
             stats_sheet.cell(row=row, column=1).font = Font(bold=True, color="800080")
@@ -463,8 +457,8 @@ class ExcelWriter:
             stats_sheet.cell(row=row, column=1, value=f"  Target Key:")
             stats_sheet.cell(row=row, column=2, value=str(target_ref))
             row += 1
-            stats_sheet.cell(row=row, column=1, value=f"  Substring Match:")
-            stats_sheet.cell(row=row, column=2, value=f"{'YES' if substring_match else 'NO'} ({substring_type})")
+            stats_sheet.cell(row=row, column=1, value=f"  Core Partial Match:")
+            stats_sheet.cell(row=row, column=2, value=f"{'YES' if partial_match else 'NO'}")
             row += 1
             stats_sheet.cell(row=row, column=1, value=f"  Amount Equal:")
             stats_sheet.cell(row=row, column=2, value=f"{'YES' if abs(source_amt - target_amt) < 0.01 else 'NO'} (Source: {source_amt:.2f}, Target: {target_amt:.2f})")

@@ -12,7 +12,7 @@ Generate realistic matched, potentially matched, and unmatched transaction datas
 | `<Source>.csv` | CSV export of the source dataset |
 | `<Target>.csv` | CSV export of the target dataset |
 
-The generated data includes controlled distributions of **exact 1:1 matches**, **exact 1:N matches**, **potential (partial) matches**, and **unmatched records** — making it ideal for validating reconciliation engines such as Microsoft Copilot for Finance.
+The generated data includes controlled distributions of **exact 1:1 matched records**, **potentially matched 1:N aggregate records**, **potential tolerance/partial records**, and **unmatched records** — making it ideal for validating reconciliation engines such as Microsoft Copilot for Finance.
 
 ---
 
@@ -36,7 +36,7 @@ recon-datagen --quick -s bank-recon -n 500 --seed 42
 recon-datagen
 ```
 
-The interactive CLI walks you through scenario selection, row counts, match distributions, 1:N configuration, variance tolerances, and output options.
+The interactive CLI walks you through scenario selection, row counts, match distributions, 1:N potential-match configuration, variance tolerances, and output options.
 
 ---
 
@@ -121,17 +121,13 @@ recon_test_data_bank_recon_20260211_134217/
 ### Exact 1:1 Match
 One source record maps to exactly one target record. Mapping keys and amounts match perfectly.
 
-### Exact 1:N Match
-One source record maps to **N** target records. The source amount equals the **sum** of all N target amounts. Target keys are suffixed (e.g. `REF-2024-123456-01`, `-02`, etc.).
+### Potential 1:N Aggregate Match
+One source record maps to **N** target records with the same mapping key. The source amount equals the **sum** of all N target amounts. Finance.Copilot reports these same-key multi-row aggregate groups as `PotentiallyMatched`, not `Matched`.
 
 ### Potential (Partial) Match
-Source and target are related but not identical. The mapping key is **always** modified via one of:
-- **Substring / superset** — target key contains the source key (e.g. `PMT-REF-2024-123456`)
-- **Subset** — target key is a portion of the source key (e.g. `2024-123456`)
-- **Prefix/suffix addition** — target key has extra segments (e.g. `REF-2024-123456-A`)
-- **Typo** — a character swap, replacement, or truncation in the target key
+Source and target are related but not identical. Finance.Copilot partial matching calls `IsPartialMatch(primary, secondary)`, so the target key must be a shorter key that matches a word-boundary-aligned portion of the source key. Examples include `2024-123456`, `REF-2024`, or `REF2024123456` for a source key like `REF-2024-123456`.
 
-Optionally, amount and/or date variances are also applied on top of the key modification.
+Amount tolerance potential matches keep the same mapping key and apply a non-zero amount difference. These rows are `PotentiallyMatched` only when the reconciliation request configures an amount tolerance large enough for the generated difference.
 
 ### Unmatched Source
 A source record with no corresponding target record.
@@ -146,7 +142,7 @@ A target record with no corresponding source record (orphan).
 | Setting | Presets |
 |---------|--------|
 | **Match Distribution** | Balanced (60/25/15), High Match (80/15/5), Low Match (40/30/30), Challenging (30/40/30), Custom |
-| **1:N Ratio** | Low (20%, 2–3 splits), Medium (35%, 2–5), High (50%, 2–7), Custom |
+| **1:N Potential Ratio** | Low (20%, 2-3 splits), Medium (35%, 2-5), High (50%, 2-7), Custom |
 | **Variance Tolerance** | Zero (0%/0d), Tight (±2%/±1d), Normal (±5%/±3d), Loose (±10%/±7d), Custom |
 | **Row Count** | 500 / 5K / 10K / 50K / 100K / 500K / 1M / Custom |
 
@@ -170,15 +166,16 @@ A target record with no corresponding source record (orphan).
 
 ✓ Data generation complete!
 
-┌─────────────────────────┬─────┐
-│ Source Dataset Rows     │ 500 │
-│ Target Dataset Rows     │ 682 │
-│ Exact 1:1 Matches       │ 210 │
-│ Exact 1:N Matches       │  90 │
-│ Potential Matches       │ 125 │
-│ Unmatched (Source Only) │  75 │
-│ Unmatched (Target Only) │  37 │
-└─────────────────────────┴─────┘
+┌─────────────────────────────┬─────┐
+│ Source Dataset Rows         │ 500 │
+│ Target Dataset Rows         │ 557 │
+│ Matched (Exact 1:1)         │ 300 │
+│ Potentially Matched         │ 125 │
+│ Potential 1:N Aggregate     │  37 │
+│ Potential Tolerance/Partial │  88 │
+│ Unmatched (Source Only)     │  75 │
+│ Unmatched (Target Only)     │  37 │
+└─────────────────────────────┴─────┘
 
 Output folder:  recon_test_data_bank_recon_20260211_134217/
   XLSX:        recon_test_data_bank_recon_20260211_134217.xlsx

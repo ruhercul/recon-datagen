@@ -43,8 +43,8 @@ class ExpenseReconciliationScenario(ReconciliationScenario):
     @property
     def dataset1_schema(self) -> List[ColumnDef]:
         return [
-            ColumnDef("ReportID", "string", is_key=True),
-            ColumnDef("EmployeeID", "string", is_key=True),
+            ColumnDef("ReportID", "string", is_key=True),  # Actual matching key
+            ColumnDef("EmployeeID", "string"),
             ColumnDef("EmployeeName", "string"),
             ColumnDef("ReportDate", "date"),
             ColumnDef("MerchantName", "string"),
@@ -56,14 +56,14 @@ class ExpenseReconciliationScenario(ReconciliationScenario):
     @property
     def dataset2_schema(self) -> List[ColumnDef]:
         return [
-            ColumnDef("CardTransactionID", "string", is_key=True),
-            ColumnDef("CardholderEmployeeID", "string", is_key=True),
+            ColumnDef("CardTransactionID", "string"),  # Unique identifier
+            ColumnDef("CardholderEmployeeID", "string"),
             ColumnDef("PostingDate", "date"),
             ColumnDef("Merchant", "string"),
             ColumnDef("MCC", "string"),
             ColumnDef("Currency", "string"),
             ColumnDef("BilledAmount", "decimal", is_monetary=True),
-            ColumnDef("AuthorizationCode", "string"),
+            ColumnDef("AuthorizationCode", "string", is_key=True),  # Actual matching key
         ]
     
     @property
@@ -156,7 +156,7 @@ class ExpenseReconciliationScenario(ReconciliationScenario):
         
         for i, split_amount in enumerate(amounts):
             merchant, _, mcc = self._get_merchant_and_category()
-            ref = match_group_id if split_count == 1 else f"{match_group_id}-{i+1:02d}"
+            ref = match_group_id
             
             records.append({
                 "CardTransactionID": f"CTX{self._generate_unique_id()}",

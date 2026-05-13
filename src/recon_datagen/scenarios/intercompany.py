@@ -43,10 +43,10 @@ class IntercompanyScenario(ReconciliationScenario):
     @property
     def dataset1_schema(self) -> List[ColumnDef]:
         return [
-            ColumnDef("ICTransactionID", "string", is_key=True),
-            ColumnDef("PartnerEntityCode", "string", is_key=True),
+            ColumnDef("ICTransactionID", "string"),  # Unique identifier
+            ColumnDef("PartnerEntityCode", "string"),
             ColumnDef("PostingDate", "date"),
-            ColumnDef("DocumentNumber", "string", is_key=True),
+            ColumnDef("DocumentNumber", "string", is_key=True),  # Actual matching key
             ColumnDef("Currency", "string"),
             ColumnDef("ICAmount", "decimal", is_monetary=True),
             ColumnDef("AccountCode", "string"),
@@ -56,10 +56,10 @@ class IntercompanyScenario(ReconciliationScenario):
     @property
     def dataset2_schema(self) -> List[ColumnDef]:
         return [
-            ColumnDef("ICTransactionRef", "string", is_key=True),
-            ColumnDef("CounterpartyEntityCode", "string", is_key=True),
+            ColumnDef("ICTransactionRef", "string"),  # Unique identifier
+            ColumnDef("CounterpartyEntityCode", "string"),
             ColumnDef("PostingDate", "date"),
-            ColumnDef("VoucherNumber", "string", is_key=True),
+            ColumnDef("VoucherNumber", "string", is_key=True),  # Actual matching key
             ColumnDef("Currency", "string"),
             ColumnDef("CorrespondingAmount", "decimal", is_monetary=True),
             ColumnDef("AccountNumber", "string"),
@@ -145,7 +145,7 @@ class IntercompanyScenario(ReconciliationScenario):
         
         for i, split_amount in enumerate(amounts):
             posting_date = transaction_date
-            voucher = match_group_id if split_count == 1 else f"{match_group_id}-{i+1:02d}"
+            voucher = match_group_id
             
             records.append({
                 "ICTransactionRef": f"ICB{self._generate_unique_id()}",

@@ -43,9 +43,9 @@ class TaxReconciliationScenario(ReconciliationScenario):
     @property
     def dataset1_schema(self) -> List[ColumnDef]:
         return [
-            ColumnDef("TaxType", "string", is_key=True),
-            ColumnDef("Jurisdiction", "string", is_key=True),
-            ColumnDef("FilingPeriod", "string", is_key=True),
+            ColumnDef("TaxType", "string"),
+            ColumnDef("Jurisdiction", "string"),
+            ColumnDef("FilingPeriod", "string", is_key=True),  # Actual matching key
             ColumnDef("TransactionCount", "integer"),
             ColumnDef("TaxableBase", "decimal"),
             ColumnDef("CalculatedTax", "decimal", is_monetary=True),
@@ -56,10 +56,10 @@ class TaxReconciliationScenario(ReconciliationScenario):
     @property
     def dataset2_schema(self) -> List[ColumnDef]:
         return [
-            ColumnDef("TaxReturnID", "string", is_key=True),
-            ColumnDef("TaxType", "string", is_key=True),
-            ColumnDef("Jurisdiction", "string", is_key=True),
-            ColumnDef("FilingPeriod", "string", is_key=True),
+            ColumnDef("TaxReturnID", "string"),  # Unique identifier
+            ColumnDef("TaxType", "string"),
+            ColumnDef("Jurisdiction", "string"),
+            ColumnDef("FilingPeriod", "string", is_key=True),  # Actual matching key
             ColumnDef("ReportedTax", "decimal", is_monetary=True),
             ColumnDef("PaymentsMade", "decimal"),
             ColumnDef("Refunds", "decimal"),

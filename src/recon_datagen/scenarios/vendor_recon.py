@@ -43,10 +43,10 @@ class VendorReconciliationScenario(ReconciliationScenario):
     @property
     def dataset1_schema(self) -> List[ColumnDef]:
         return [
-            ColumnDef("APInvoiceID", "string", is_key=True),
-            ColumnDef("VendorID", "string", is_key=True),
+            ColumnDef("APInvoiceID", "string"),  # Unique identifier
+            ColumnDef("VendorID", "string"),
             ColumnDef("VendorName", "string"),
-            ColumnDef("InvoiceNumber", "string", is_key=True),
+            ColumnDef("InvoiceNumber", "string", is_key=True),  # Actual matching key
             ColumnDef("InvoiceDate", "date"),
             ColumnDef("DueDate", "date"),
             ColumnDef("Currency", "string"),
@@ -56,11 +56,11 @@ class VendorReconciliationScenario(ReconciliationScenario):
     @property
     def dataset2_schema(self) -> List[ColumnDef]:
         return [
-            ColumnDef("StatementLineID", "string", is_key=True),
-            ColumnDef("SupplierAccountNumber", "string", is_key=True),
-            ColumnDef("SupplierName", "string"),
+            ColumnDef("StatementLineID", "string"),  # Unique identifier
+            ColumnDef("SupplierAccountNumber", "string"),
+            ColumnDef("VendorName", "string"),
             ColumnDef("StatementDate", "date"),
-            ColumnDef("InvoiceNumber", "string", is_key=True),
+            ColumnDef("InvoiceNumber", "string", is_key=True),  # Actual matching key
             ColumnDef("InvoiceDate", "date"),
             ColumnDef("Currency", "string"),
             ColumnDef("StatementAmount", "decimal", is_monetary=True),

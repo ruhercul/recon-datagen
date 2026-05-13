@@ -43,9 +43,9 @@ class BankReconciliationScenario(ReconciliationScenario):
     @property
     def dataset1_schema(self) -> List[ColumnDef]:
         return [
-            ColumnDef("TransactionID", "string", is_key=True),
+            ColumnDef("TransactionID", "string"),  # Unique identifier, not a matching key
             ColumnDef("PostingDate", "date"),
-            ColumnDef("DocumentNumber", "string", is_key=True),
+            ColumnDef("DocumentNumber", "string", is_key=True),  # Actual matching key
             ColumnDef("PayeeName", "string"),
             ColumnDef("Description", "string"),
             ColumnDef("Currency", "string"),
@@ -56,10 +56,10 @@ class BankReconciliationScenario(ReconciliationScenario):
     @property
     def dataset2_schema(self) -> List[ColumnDef]:
         return [
-            ColumnDef("BankTransactionID", "string", is_key=True),
+            ColumnDef("BankTransactionID", "string"),  # Unique identifier, not a matching key
             ColumnDef("TransactionDate", "date"),
             ColumnDef("ClearingDate", "date"),
-            ColumnDef("BankReference", "string", is_key=True),
+            ColumnDef("BankReference", "string", is_key=True),  # Actual matching key
             ColumnDef("Counterparty", "string"),
             ColumnDef("Narrative", "string"),
             ColumnDef("Currency", "string"),
@@ -141,10 +141,10 @@ class BankReconciliationScenario(ReconciliationScenario):
         currency = random.choice(["USD", "USD", "USD", "EUR", "GBP"])
         
         for i, split_amount in enumerate(amounts):
-            # Always produce an exact match here; the generator's
-            # apply_variance step handles potential-match mutations.
+            # Finance.Copilot groups target records by identical mapping key.
+            # All splits share the same key; only amounts differ.
             clearing_date = transaction_date
-            ref = match_group_id if split_count == 1 else f"{match_group_id}-{i+1:02d}"
+            ref = match_group_id
             
             records.append({
                 "BankTransactionID": f"BNK{self._generate_unique_id()}",

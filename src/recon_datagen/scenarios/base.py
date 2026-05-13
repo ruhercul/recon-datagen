@@ -148,6 +148,110 @@ class ReconciliationScenario(ABC):
             amounts[-1] = round(amounts[-1] + diff, 2)
         
         return amounts
+
+    @staticmethod
+    def _skip_non_alphanumeric_chars(text: str, start_index: int) -> int:
+        """Skip punctuation the same way Finance.Copilot partial matching does."""
+        current_index = start_index
+        while current_index < len(text) and not text[current_index].isalnum():
+            current_index += 1
+
+        return current_index
+
+    @classmethod
+    def _is_alphanumeric_match_from(
+        cls,
+        primary_value: str,
+        secondary_value: str,
+        primary_start_index: int,
+        secondary_start_index: int,
+    ) -> bool:
+        primary_index = primary_start_index
+        secondary_index = secondary_start_index
+
+        while primary_index < len(primary_value) and secondary_index < len(secondary_value):
+            if not secondary_value[secondary_index].isalnum() and not secondary_value[secondary_index].isspace():
+                secondary_index = cls._skip_non_alphanumeric_chars(secondary_value, secondary_index)
+
+            if secondary_index == len(secondary_value):
+                break
+
+            if not primary_value[primary_index].isalnum() and not primary_value[primary_index].isspace():
+                primary_index = cls._skip_non_alphanumeric_chars(primary_value, primary_index)
+
+            if primary_index == len(primary_value):
+                break
+
+            if primary_value[primary_index].lower() != secondary_value[secondary_index].lower():
+                return False
+
+            primary_index += 1
+            secondary_index += 1
+
+        secondary_index = cls._skip_non_alphanumeric_chars(secondary_value, secondary_index)
+
+        if secondary_index != len(secondary_value):
+            return False
+
+        return primary_index == len(primary_value) or not primary_value[primary_index].isalnum()
+
+    @classmethod
+    def is_partial_match(cls, primary_value: str, secondary_value: str) -> bool:
+        """Mirror Finance.Copilot ReconciliationPartialMatchUtilities.IsPartialMatch."""
+        if not primary_value and not secondary_value:
+            return True
+
+        primary_index = 0
+        secondary_index = 0
+
+        while primary_index < len(primary_value) and secondary_index < len(secondary_value):
+            primary_index = cls._skip_non_alphanumeric_chars(primary_value, primary_index)
+            secondary_index = cls._skip_non_alphanumeric_chars(secondary_value, secondary_index)
+
+            if primary_index == len(primary_value) or secondary_index == len(secondary_value):
+                break
+
+            if primary_value[primary_index].lower() == secondary_value[secondary_index].lower():
+                matched = cls._is_alphanumeric_match_from(
+                    primary_value,
+                    secondary_value,
+                    primary_index,
+                    secondary_index,
+                )
+                if matched:
+                    return True
+
+            while primary_index < len(primary_value) and primary_value[primary_index].isalnum():
+                primary_index += 1
+
+        return False
+
+    def _make_partial_secondary_key(self, reference: str) -> str:
+        """Create a target key that Finance.Copilot will match as partial."""
+        reference = str(reference)
+        candidates = []
+
+        if "-" in reference:
+            parts = reference.split("-")
+            if len(parts) > 2:
+                candidates.append("-".join(parts[1:]))
+                candidates.append("-".join(parts[:-1]))
+
+        alphanumeric = "".join(character for character in reference if character.isalnum())
+        if alphanumeric:
+            candidates.append(alphanumeric)
+
+        digits = "".join(character for character in reference if character.isdigit())
+        if digits:
+            candidates.append(digits)
+
+        valid_candidates = [
+            candidate
+            for candidate in candidates
+            if candidate and candidate != reference and self.is_partial_match(reference, candidate)
+        ]
+
+        return random.choice(valid_candidates) if valid_candidates else reference
     
     @abstractmethod
     def generate_source_record(
@@ -245,68 +349,59 @@ class ReconciliationScenario(ABC):
                         ref = ref[:-1]
                     modified[self.secondary_key_column] = ref
         
+        elif variance_type == VarianceType.TOLERANCE_AMOUNT:
+            # Finance.Copilot: same mapping keys, amount within tolerance.
+            # Keys stay identical; only the monetary amount is modified by a
+            # small value within the tolerance range.
+            if self.secondary_monetary_column in modified:
+                original = modified[self.secondary_monetary_column]
+                # Always produce a non-zero difference so it isn't exact
+                sign = random.choice([-1, 1])
+                variance = original * random.uniform(
+                    amount_variance_percent * 0.1,
+                    amount_variance_percent,
+                )
+                adjusted_amount = round(
+                    original + sign * variance, 2
+                )
+                if adjusted_amount == original and amount_variance_percent > 0:
+                    adjusted_amount = round(original + sign * 0.01, 2)
+
+                modified[self.secondary_monetary_column] = adjusted_amount
+
         elif variance_type == VarianceType.PARTIAL_MATCH_AMOUNT_EQUAL:
-            # Per MS Copilot Finance: substring matching on mapping key
-            # Target reference becomes a superset (contains source ref) or subset
-            # Amounts stay EQUAL -> classified as "Potentially Matched"
-            # Use target's key column
+            # Finance.Copilot IsPartialMatch(primary, secondary) checks whether
+            # secondary's alphanumeric content appears as a contiguous, word-
+            # boundary-aligned substring inside primary.  Therefore the TARGET
+            # (secondary) must be SHORTER / a subset of the source (primary).
+            # Amounts stay EQUAL -> classified as "Potentially Matched".
             if self.secondary_key_column in modified:
-                ref = modified[self.secondary_key_column]
-                partial_type = random.choice(['superset', 'subset', 'prefix_add', 'suffix_add'])
-                
-                if partial_type == 'superset':
-                    # Add suffix to make target a superset of source
-                    suffix = f"-{random.randint(1,99):02d}"
-                    ref = ref + suffix
-                elif partial_type == 'subset':
-                    # Remove part of reference (target is substring of source)
-                    if '-' in ref:
-                        parts = ref.split('-')
-                        if len(parts) > 2:
-                            ref = '-'.join(parts[1:])  # Remove first part
-                elif partial_type == 'prefix_add':
-                    # Add prefix
-                    prefix = random.choice(['PMT-', 'TRF-', 'ACH-', 'WIR-'])
-                    ref = prefix + ref
-                elif partial_type == 'suffix_add':
-                    # Add descriptive suffix
-                    suffix = random.choice(['-A', '-B', '-PART1', '-SPLIT'])
-                    ref = ref + suffix
-                
-                modified[self.secondary_key_column] = ref
+                ref = str(modified[self.secondary_key_column])
+                modified[self.secondary_key_column] = self._make_partial_secondary_key(ref)
             # Note: Amount is NOT modified - stays equal for potential match classification
         
         elif variance_type == VarianceType.PARTIAL_MATCH_AMOUNT_DIFF:
-            # Per MS Copilot Finance: partial key match + amount difference
-            # This should be classified as "Unmatched" per the documentation
-            # Use target's key column
+            # Finance.Copilot: partial key match (secondary subset of primary)
+            # + amount difference → classified as "Unmatched".
+            # Use same subset-style key mutations as PARTIAL_MATCH_AMOUNT_EQUAL.
             if self.secondary_key_column in modified:
-                ref = modified[self.secondary_key_column]
-                partial_type = random.choice(['superset', 'subset', 'prefix_add', 'suffix_add'])
-                
-                if partial_type == 'superset':
-                    suffix = f"-{random.randint(1,99):02d}"
-                    ref = ref + suffix
-                elif partial_type == 'subset':
-                    if '-' in ref:
-                        parts = ref.split('-')
-                        if len(parts) > 2:
-                            ref = '-'.join(parts[1:])
-                elif partial_type == 'prefix_add':
-                    prefix = random.choice(['PMT-', 'TRF-', 'ACH-', 'WIR-'])
-                    ref = prefix + ref
-                elif partial_type == 'suffix_add':
-                    suffix = random.choice(['-A', '-B', '-PART1', '-SPLIT'])
-                    ref = ref + suffix
-                
-                modified[self.secondary_key_column] = ref
-            
+                ref = str(modified[self.secondary_key_column])
+                modified[self.secondary_key_column] = self._make_partial_secondary_key(ref)
+
             # Also modify the amount - this creates the unmatched classification
-            # Use target's monetary column
             if self.secondary_monetary_column in modified:
                 original = modified[self.secondary_monetary_column]
-                variance = original * random.uniform(-amount_variance_percent, amount_variance_percent)
-                modified[self.secondary_monetary_column] = round(original + variance, 2)
+                sign = random.choice([-1, 1])
+                variance = original * random.uniform(
+                    amount_variance_percent, amount_variance_percent * 3,
+                )
+                adjusted_amount = round(
+                    original + sign * variance, 2
+                )
+                if adjusted_amount == original:
+                    adjusted_amount = round(original + sign * 0.01, 2)
+
+                modified[self.secondary_monetary_column] = adjusted_amount
         
         return modified
     

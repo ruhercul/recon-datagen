@@ -19,6 +19,7 @@ class DataGenerator:
         self.scenario = scenario
         self.config = config
         self.stats = GenerationStats()
+        self._match_group_counter = 0
         
         # Set random seed for reproducibility
         if config.seed is not None:
@@ -28,30 +29,32 @@ class DataGenerator:
         """Calculate how many records of each type to generate."""
         total = self.config.total_source_rows
         
-        # Calculate counts for each category
+        # Finance.Copilot only reports exact 1:1 groups as Matched. Same-key
+        # multi-row aggregate groups are reported as PotentiallyMatched.
         exact_match_count = int(total * self.config.match_percent)
         potential_count = int(total * self.config.potential_percent)
         unmatched_source_count = total - exact_match_count - potential_count
         
-        # Within exact matches, split between 1:1 and 1:N
-        one_to_n_count = int(exact_match_count * self.config.one_to_n_ratio)
-        one_to_one_count = exact_match_count - one_to_n_count
+        # Within potential matches, split out the 1:N aggregate cases.
+        one_to_n_count = int(potential_count * self.config.one_to_n_ratio)
+        near_match_count = potential_count - one_to_n_count
         
         # Also generate some unmatched target records (orphans in dataset2)
         unmatched_target_count = int(unmatched_source_count * 0.5)  # Half as many orphan targets
         
         return {
-            MatchType.EXACT_1_TO_1: one_to_one_count,
+            MatchType.EXACT_1_TO_1: exact_match_count,
             MatchType.EXACT_1_TO_N: one_to_n_count,
-            MatchType.POTENTIAL: potential_count,
+            MatchType.POTENTIAL: near_match_count,
             MatchType.UNMATCHED_SOURCE: unmatched_source_count,
             MatchType.UNMATCHED_TARGET: unmatched_target_count,
         }
     
     def _generate_match_group_id(self, prefix: str = "REF") -> str:
         """Generate a unique match group ID."""
+        self._match_group_counter += 1
         year = random.randint(2023, 2025)
-        sequence = random.randint(100000, 999999)
+        sequence = self._match_group_counter
         return f"{prefix}-{year}-{sequence}"
     
     def generate(self) -> Generator[tuple[list[dict], list[dict]], None, None]:
@@ -146,6 +149,7 @@ class DataGenerator:
                 self.stats.example_1_to_n_targets = [t.copy() for t in target_record_list]
             
             self.stats.exact_1_to_n_matches += 1
+            self.stats.potential_matches += 1
             self.stats.source_rows += 1
             self.stats.target_rows += len(target_record_list)
         
@@ -154,42 +158,59 @@ class DataGenerator:
             amount = self.scenario._generate_amount()
             txn_date = self.scenario._generate_date()
             
-            # Step 1: Generate an exact-match pair (keys & amounts match perfectly).
-            source_record = self.scenario.generate_source_record(
-                match_group_id, amount, txn_date
-            )
-            target_record_list = self.scenario.generate_target_records(
-                match_group_id, amount, txn_date, split_count=1, exact_match=True
-            )
+            # Finance.Copilot classifies single-row near matches as
+            # PotentiallyMatched when either amount tolerance or partial key
+            # matching is configured. Avoid tolerance-only records when the
+            # configured amount variance is zero because those become exact
+            # Matched rows in the core engine.
+            potential_styles = ["partial_key"]
+            potential_weights = [40]
+            if self.config.amount_variance_percent > 0:
+                potential_styles.append("tolerance")
+                potential_weights.append(60)
+
+            potential_style = random.choices(
+                potential_styles,
+                weights=potential_weights,
+                k=1,
+            )[0]
             
-            # Step 2: ALWAYS modify the mapping key so the pair is clearly
-            #         distinguishable from an exact match.  Pick a key-
-            #         mutation style (substring / typo).
-            key_variance = random.choice([
-                VarianceType.PARTIAL_MATCH_AMOUNT_EQUAL,
-                VarianceType.REFERENCE_TYPO,
-            ])
-            target_record_list = [
-                self.scenario.apply_variance(
-                    record,
-                    key_variance,
-                    self.config.amount_variance_percent,
-                    self.config.date_variance_days,
+            if potential_style == "tolerance":
+                # Case 1 – Same mapping keys, amount within tolerance.
+                # Keys match exactly; only the monetary amount differs by a
+                # small value within the configured tolerance range.
+                source_record = self.scenario.generate_source_record(
+                    match_group_id, amount, txn_date
                 )
-                for record in target_record_list
-            ]
-            
-            # Step 3: Optionally ALSO apply an amount or date variance on
-            #         top of the key change (50% chance).
-            if random.random() < 0.50:
-                secondary_variance = random.choice([
-                    VarianceType.AMOUNT_DIFFERENCE,
-                    VarianceType.DATE_DIFFERENCE,
-                ])
+                target_record_list = self.scenario.generate_target_records(
+                    match_group_id, amount, txn_date,
+                    split_count=1, exact_match=True,
+                )
                 target_record_list = [
                     self.scenario.apply_variance(
                         record,
-                        secondary_variance,
+                        VarianceType.TOLERANCE_AMOUNT,
+                        self.config.amount_variance_percent,
+                        self.config.date_variance_days,
+                    )
+                    for record in target_record_list
+                ]
+            else:
+                # Case 3 – Partial key match + amounts equal.
+                # The secondary key is a proper substring/subset of the
+                # primary key (aligns with Finance.Copilot's IsPartialMatch
+                # algorithm).  Amounts stay identical.
+                source_record = self.scenario.generate_source_record(
+                    match_group_id, amount, txn_date
+                )
+                target_record_list = self.scenario.generate_target_records(
+                    match_group_id, amount, txn_date,
+                    split_count=1, exact_match=True,
+                )
+                target_record_list = [
+                    self.scenario.apply_variance(
+                        record,
+                        VarianceType.PARTIAL_MATCH_AMOUNT_EQUAL,
                         self.config.amount_variance_percent,
                         self.config.date_variance_days,
                     )
@@ -200,7 +221,7 @@ class DataGenerator:
             target_records.extend(target_record_list)
             
             # Store first partial-match example for verification
-            if self.stats.example_partial_match_source is None:
+            if potential_style == "partial_key" and self.stats.example_partial_match_source is None:
                 self.stats.example_partial_match_source = source_record.copy()
                 self.stats.example_partial_match_target = target_record_list[0].copy()
             

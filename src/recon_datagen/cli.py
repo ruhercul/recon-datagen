@@ -193,22 +193,22 @@ def ask_match_distribution() -> tuple[float, float]:
 
 def ask_one_to_n_config() -> tuple[float, int, int]:
     """Ask user for 1:N match configuration."""
-    console.print("\n[bold cyan]1:N Match Configuration[/bold cyan]")
-    console.print("Configure how many matched records should be 1:N (one source to multiple targets).\n")
+    console.print("\n[bold cyan]1:N Potential Match Configuration[/bold cyan]")
+    console.print("Configure how many potentially matched records should be 1:N aggregate groups.\n")
     
     CUSTOM = "CUSTOM"  # Sentinel value since questionary ignores None
     
     presets = [
         questionary.Choice(
-            title="Low 1:N (20% of matches are 1:N, 2-3 splits)", 
+            title="Low 1:N (20% of potential matches are 1:N, 2-3 splits)",
             value=(0.20, 2, 3)
         ),
         questionary.Choice(
-            title="Medium 1:N (35% of matches are 1:N, 2-5 splits)", 
+            title="Medium 1:N (35% of potential matches are 1:N, 2-5 splits)",
             value=(0.35, 2, 5)
         ),
         questionary.Choice(
-            title="High 1:N (50% of matches are 1:N, 2-7 splits)", 
+            title="High 1:N (50% of potential matches are 1:N, 2-7 splits)",
             value=(0.50, 2, 7)
         ),
         questionary.Choice(
@@ -228,7 +228,7 @@ def ask_one_to_n_config() -> tuple[float, int, int]:
     
     if result == CUSTOM:
         ratio = questionary.text(
-            "Percentage of matches that are 1:N (0-100):",
+            "Percentage of potential matches that are 1:N (0-100):",
             default="30",
             validate=lambda x: x.replace('.', '').isdigit() and 0 <= float(x) <= 100,
             style=CUSTOM_STYLE
@@ -403,12 +403,12 @@ def confirm_configuration(config: GenerationConfig, scenario) -> bool:
     table.add_row("", f"Amount: {', '.join(dataset2_monetary)}")
     table.add_row("", "")
     table.add_row("[bold]Match Distribution[/bold]", "")
-    table.add_row("  Exact Matches", f"{config.match_percent * 100:.1f}%")
-    table.add_row("  Potential Matches", f"{config.potential_percent * 100:.1f}%")
+    table.add_row("  Matched (Exact 1:1)", f"{config.match_percent * 100:.1f}%")
+    table.add_row("  Potentially Matched", f"{config.potential_percent * 100:.1f}%")
     table.add_row("  Unmatched", f"{config.unmatched_percent * 100:.1f}%")
     table.add_row("", "")
     table.add_row("[bold]1:N Configuration[/bold]", "")
-    table.add_row("  1:N Ratio (of exact)", f"{config.one_to_n_ratio * 100:.1f}%")
+    table.add_row("  1:N Ratio (of potential)", f"{config.one_to_n_ratio * 100:.1f}%")
     table.add_row("  Splits Range", f"{config.min_n_splits} - {config.max_n_splits}")
     table.add_row("", "")
     table.add_row("[bold]Variance Settings[/bold]", "")

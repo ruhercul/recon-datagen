@@ -43,10 +43,10 @@ class FixedAssetReconciliationScenario(ReconciliationScenario):
     @property
     def dataset1_schema(self) -> List[ColumnDef]:
         return [
-            ColumnDef("AssetID", "string", is_key=True),
+            ColumnDef("AssetID", "string", is_key=True),  # Actual matching key
             ColumnDef("AssetTag", "string"),
             ColumnDef("AssetName", "string"),
-            ColumnDef("DepreciationPeriod", "string", is_key=True),
+            ColumnDef("DepreciationPeriod", "string"),
             ColumnDef("AcquisitionDate", "date"),
             ColumnDef("Cost", "decimal"),
             ColumnDef("AccumulatedDepreciation", "decimal"),
@@ -56,9 +56,9 @@ class FixedAssetReconciliationScenario(ReconciliationScenario):
     @property
     def dataset2_schema(self) -> List[ColumnDef]:
         return [
-            ColumnDef("Period", "string", is_key=True),
+            ColumnDef("Period", "string"),
             ColumnDef("GLAccount", "string"),
-            ColumnDef("FAAssetID", "string", is_key=True),
+            ColumnDef("FAAssetID", "string", is_key=True),  # Actual matching key
             ColumnDef("OpeningCost", "decimal"),
             ColumnDef("Additions", "decimal"),
             ColumnDef("Disposals", "decimal"),
