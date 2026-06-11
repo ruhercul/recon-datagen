@@ -43,9 +43,9 @@ class InventoryReconciliationScenario(ReconciliationScenario):
     @property
     def dataset1_schema(self) -> List[ColumnDef]:
         return [
-            ColumnDef("ItemNumber", "string", is_key=True),  # Actual matching key
+            ColumnDef("ItemNumber", "string", is_key=True),  # Composite key: item number + location
             ColumnDef("SKU", "string"),
-            ColumnDef("Location", "string"),
+            ColumnDef("Location", "string", is_key=True),  # Composite key: item number + location
             ColumnDef("Bin", "string"),
             ColumnDef("QuantityOnHand", "integer"),
             ColumnDef("UnitCost", "decimal", is_monetary=True),
@@ -57,8 +57,8 @@ class InventoryReconciliationScenario(ReconciliationScenario):
     def dataset2_schema(self) -> List[ColumnDef]:
         return [
             ColumnDef("CountSessionID", "string"),  # Unique identifier
-            ColumnDef("ItemCode", "string", is_key=True),  # Actual matching key
-            ColumnDef("Location", "string"),
+            ColumnDef("ItemCode", "string", is_key=True),  # Composite key: item code + location
+            ColumnDef("Location", "string", is_key=True),  # Composite key: item code + location
             ColumnDef("Bin", "string"),
             ColumnDef("CountQuantity", "integer"),
             ColumnDef("UnitCostAtCount", "decimal", is_monetary=True),

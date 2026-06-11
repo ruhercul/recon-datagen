@@ -44,9 +44,9 @@ class VendorReconciliationScenario(ReconciliationScenario):
     def dataset1_schema(self) -> List[ColumnDef]:
         return [
             ColumnDef("APInvoiceID", "string"),  # Unique identifier
-            ColumnDef("VendorID", "string"),
+            ColumnDef("VendorID", "string", is_key=True),  # Composite key: vendorID + invoice number
             ColumnDef("VendorName", "string"),
-            ColumnDef("InvoiceNumber", "string", is_key=True),  # Actual matching key
+            ColumnDef("InvoiceNumber", "string", is_key=True),  # Composite key: vendorID + invoice number
             ColumnDef("InvoiceDate", "date"),
             ColumnDef("DueDate", "date"),
             ColumnDef("Currency", "string"),
@@ -57,10 +57,10 @@ class VendorReconciliationScenario(ReconciliationScenario):
     def dataset2_schema(self) -> List[ColumnDef]:
         return [
             ColumnDef("StatementLineID", "string"),  # Unique identifier
-            ColumnDef("SupplierAccountNumber", "string"),
+            ColumnDef("SupplierAccountNumber", "string", is_key=True),  # Composite key: supplier account + invoice number
             ColumnDef("VendorName", "string"),
             ColumnDef("StatementDate", "date"),
-            ColumnDef("InvoiceNumber", "string", is_key=True),  # Actual matching key
+            ColumnDef("InvoiceNumber", "string", is_key=True),  # Composite key: supplier account + invoice number
             ColumnDef("InvoiceDate", "date"),
             ColumnDef("Currency", "string"),
             ColumnDef("StatementAmount", "decimal", is_monetary=True),

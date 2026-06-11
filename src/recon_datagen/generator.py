@@ -20,7 +20,14 @@ class DataGenerator:
         self.config = config
         self.stats = GenerationStats()
         self._match_group_counter = 0
-        
+
+        # Propagate the configured number of mapping keys to the scenario so
+        # schema, declared keys, and third-key injection stay consistent.
+        self.scenario.num_mapping_keys = config.num_mapping_keys
+
+        # Enforce composite-key requirement: exactly 2 non-monetary + 1 monetary key per dataset.
+        self.scenario.validate_keys(expected_non_monetary=2, expected_monetary=1)
+
         # Set random seed for reproducibility
         if config.seed is not None:
             random.seed(config.seed)
@@ -97,6 +104,9 @@ class DataGenerator:
         """Generate a pair of source and target records based on match type."""
         source_records = []
         target_records = []
+        # Shared match id for matched groups; stays None for unmatched records
+        # so their third key is independent and they don't form a match group.
+        match_group_id = None
         
         if match_type == MatchType.EXACT_1_TO_1:
             match_group_id = self._generate_match_group_id()
@@ -242,6 +252,13 @@ class DataGenerator:
             
             self.stats.unmatched_target += 1
             self.stats.target_rows += 1
+        
+        # Inject the optional third mapping key (no-op unless num_mapping_keys == 3).
+        if self.scenario.num_mapping_keys >= 3:
+            for record in source_records:
+                self.scenario.add_third_key(record, dataset=1, match_group_id=match_group_id)
+            for record in target_records:
+                self.scenario.add_third_key(record, dataset=2, match_group_id=match_group_id)
         
         return source_records, target_records
     

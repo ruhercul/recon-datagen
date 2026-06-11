@@ -43,8 +43,8 @@ class GLSubledgerScenario(ReconciliationScenario):
     @property
     def dataset1_schema(self) -> List[ColumnDef]:
         return [
-            ColumnDef("AccountCode", "string", is_key=True),  # Actual matching key
-            ColumnDef("Period", "string"),
+            ColumnDef("AccountCode", "string", is_key=True),  # Composite key: account code + period
+            ColumnDef("Period", "string", is_key=True),  # Composite key: account code + period
             ColumnDef("BeginningBalance", "decimal"),
             ColumnDef("Debits", "decimal", is_monetary=True),
             ColumnDef("Credits", "decimal"),
@@ -57,8 +57,8 @@ class GLSubledgerScenario(ReconciliationScenario):
     def dataset2_schema(self) -> List[ColumnDef]:
         return [
             ColumnDef("SubledgerTransactionID", "string"),  # Unique identifier
-            ColumnDef("MappedAccountCode", "string", is_key=True),  # Actual matching key
-            ColumnDef("Period", "string"),
+            ColumnDef("MappedAccountCode", "string", is_key=True),  # Composite key: mapped account + period
+            ColumnDef("Period", "string", is_key=True),  # Composite key: mapped account + period
             ColumnDef("TransactionDate", "date"),
             ColumnDef("DocumentNumber", "string"),
             ColumnDef("Currency", "string"),

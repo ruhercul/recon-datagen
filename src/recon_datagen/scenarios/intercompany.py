@@ -44,9 +44,9 @@ class IntercompanyScenario(ReconciliationScenario):
     def dataset1_schema(self) -> List[ColumnDef]:
         return [
             ColumnDef("ICTransactionID", "string"),  # Unique identifier
-            ColumnDef("PartnerEntityCode", "string"),
+            ColumnDef("PartnerEntityCode", "string", is_key=True),  # Composite key: partner entity + document number
             ColumnDef("PostingDate", "date"),
-            ColumnDef("DocumentNumber", "string", is_key=True),  # Actual matching key
+            ColumnDef("DocumentNumber", "string", is_key=True),  # Composite key: partner entity + document number
             ColumnDef("Currency", "string"),
             ColumnDef("ICAmount", "decimal", is_monetary=True),
             ColumnDef("AccountCode", "string"),
@@ -57,9 +57,9 @@ class IntercompanyScenario(ReconciliationScenario):
     def dataset2_schema(self) -> List[ColumnDef]:
         return [
             ColumnDef("ICTransactionRef", "string"),  # Unique identifier
-            ColumnDef("CounterpartyEntityCode", "string"),
+            ColumnDef("CounterpartyEntityCode", "string", is_key=True),  # Composite key: counterparty entity + voucher number
             ColumnDef("PostingDate", "date"),
-            ColumnDef("VoucherNumber", "string", is_key=True),  # Actual matching key
+            ColumnDef("VoucherNumber", "string", is_key=True),  # Composite key: counterparty entity + voucher number
             ColumnDef("Currency", "string"),
             ColumnDef("CorrespondingAmount", "decimal", is_monetary=True),
             ColumnDef("AccountNumber", "string"),

@@ -44,9 +44,9 @@ class CustomerReconciliationScenario(ReconciliationScenario):
     def dataset1_schema(self) -> List[ColumnDef]:
         return [
             ColumnDef("ARInvoiceID", "string"),  # Unique identifier
-            ColumnDef("CustomerID", "string"),
+            ColumnDef("CustomerID", "string", is_key=True),  # Composite key: customerID + invoice number
             ColumnDef("CustomerName", "string"),
-            ColumnDef("InvoiceNumber", "string", is_key=True),  # Actual matching key
+            ColumnDef("InvoiceNumber", "string", is_key=True),  # Composite key: customerID + invoice number
             ColumnDef("InvoiceDate", "date"),
             ColumnDef("DueDate", "date"),
             ColumnDef("Currency", "string"),
@@ -57,10 +57,10 @@ class CustomerReconciliationScenario(ReconciliationScenario):
     def dataset2_schema(self) -> List[ColumnDef]:
         return [
             ColumnDef("StatementLineID", "string"),  # Unique identifier
-            ColumnDef("AccountNumber", "string"),
+            ColumnDef("AccountNumber", "string", is_key=True),  # Composite key: account number + document number
             ColumnDef("CustomerName", "string"),
             ColumnDef("StatementDate", "date"),
-            ColumnDef("DocumentNumber", "string", is_key=True),  # Actual matching key
+            ColumnDef("DocumentNumber", "string", is_key=True),  # Composite key: account number + document number
             ColumnDef("DocumentDate", "date"),
             ColumnDef("Currency", "string"),
             ColumnDef("StatementAmount", "decimal", is_monetary=True),

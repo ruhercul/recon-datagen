@@ -191,11 +191,16 @@ class ExcelWriter:
         stats_sheet.merge_cells(f'A{row}:B{row}')
         row += 2
         
-        # Get key columns from schemas
-        dataset1_keys = [col.name for col in self.scenario.dataset1_schema if col.is_key]
-        dataset2_keys = [col.name for col in self.scenario.dataset2_schema if col.is_key]
+        # Get key columns from schemas. These are the declared mapping keys for
+        # the configured num_mapping_keys (1-3), not every is_key column.
+        dataset1_keys = self.scenario.active_mapping_keys1
+        dataset2_keys = self.scenario.active_mapping_keys2
         dataset1_monetary = [col.name for col in self.scenario.dataset1_schema if col.is_monetary]
         dataset2_monetary = [col.name for col in self.scenario.dataset2_schema if col.is_monetary]
+        
+        stats_sheet.cell(row=row, column=1, value="Number of Mapping Keys:")
+        stats_sheet.cell(row=row, column=2, value=self.scenario.num_mapping_keys)
+        row += 2
         
         # Dataset 1 keys
         stats_sheet.cell(row=row, column=1, value=f"{self.scenario.dataset1_name}")

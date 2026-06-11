@@ -76,6 +76,7 @@ recon-datagen [OPTIONS]
 | `--rows` | `-n` | Number of source rows (required in quick mode) | — |
 | `--match-pct` | `-m` | Exact match percentage (0–100) | `60` |
 | `--potential-pct` | `-p` | Potential match percentage (0–100) | `25` |
+| `--num-keys` | `-k` | Non-monetary mapping keys per dataset (1–3) | `2` |
 | `--output` | `-o` | Custom output folder name | auto-timestamped |
 | `--seed` | | Random seed for reproducibility | random |
 | `--list` | `-l` | List available scenarios and exit | — |
@@ -85,6 +86,12 @@ recon-datagen [OPTIONS]
 ```bash
 # 10k rows, high-match distribution, reproducible
 recon-datagen -q -s vendor-recon -n 10000 -m 80 -p 15 --seed 123
+
+# 3 mapping keys (composite + allocation key) for complex key-detection tests
+recon-datagen -q -s intercompany -n 5000 -k 3 --seed 42
+
+# Single mapping key (unique reference only)
+recon-datagen -q -s tax-recon -n 2000 -k 1
 
 # 1M rows, default distribution
 recon-datagen -q -s bank-recon -n 1000000

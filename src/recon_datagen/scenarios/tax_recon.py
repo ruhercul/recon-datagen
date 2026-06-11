@@ -44,8 +44,8 @@ class TaxReconciliationScenario(ReconciliationScenario):
     def dataset1_schema(self) -> List[ColumnDef]:
         return [
             ColumnDef("TaxType", "string"),
-            ColumnDef("Jurisdiction", "string"),
-            ColumnDef("FilingPeriod", "string", is_key=True),  # Actual matching key
+            ColumnDef("Jurisdiction", "string", is_key=True),  # Composite key: jurisdiction + filing period
+            ColumnDef("FilingPeriod", "string", is_key=True),  # Composite key: jurisdiction + filing period
             ColumnDef("TransactionCount", "integer"),
             ColumnDef("TaxableBase", "decimal"),
             ColumnDef("CalculatedTax", "decimal", is_monetary=True),
@@ -58,8 +58,8 @@ class TaxReconciliationScenario(ReconciliationScenario):
         return [
             ColumnDef("TaxReturnID", "string"),  # Unique identifier
             ColumnDef("TaxType", "string"),
-            ColumnDef("Jurisdiction", "string"),
-            ColumnDef("FilingPeriod", "string", is_key=True),  # Actual matching key
+            ColumnDef("Jurisdiction", "string", is_key=True),  # Composite key: jurisdiction + filing period
+            ColumnDef("FilingPeriod", "string", is_key=True),  # Composite key: jurisdiction + filing period
             ColumnDef("ReportedTax", "decimal", is_monetary=True),
             ColumnDef("PaymentsMade", "decimal"),
             ColumnDef("Refunds", "decimal"),

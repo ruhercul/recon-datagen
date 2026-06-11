@@ -44,8 +44,8 @@ class BankReconciliationScenario(ReconciliationScenario):
     def dataset1_schema(self) -> List[ColumnDef]:
         return [
             ColumnDef("TransactionID", "string"),  # Unique identifier, not a matching key
-            ColumnDef("PostingDate", "date"),
-            ColumnDef("DocumentNumber", "string", is_key=True),  # Actual matching key
+            ColumnDef("PostingDate", "date", is_key=True),  # Composite key: date + document number
+            ColumnDef("DocumentNumber", "string", is_key=True),  # Composite key: date + document number
             ColumnDef("PayeeName", "string"),
             ColumnDef("Description", "string"),
             ColumnDef("Currency", "string"),
@@ -57,9 +57,9 @@ class BankReconciliationScenario(ReconciliationScenario):
     def dataset2_schema(self) -> List[ColumnDef]:
         return [
             ColumnDef("BankTransactionID", "string"),  # Unique identifier, not a matching key
-            ColumnDef("TransactionDate", "date"),
+            ColumnDef("TransactionDate", "date", is_key=True),  # Composite key: date + bank reference
             ColumnDef("ClearingDate", "date"),
-            ColumnDef("BankReference", "string", is_key=True),  # Actual matching key
+            ColumnDef("BankReference", "string", is_key=True),  # Composite key: date + bank reference
             ColumnDef("Counterparty", "string"),
             ColumnDef("Narrative", "string"),
             ColumnDef("Currency", "string"),

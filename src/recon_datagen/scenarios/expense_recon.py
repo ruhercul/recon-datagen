@@ -43,8 +43,8 @@ class ExpenseReconciliationScenario(ReconciliationScenario):
     @property
     def dataset1_schema(self) -> List[ColumnDef]:
         return [
-            ColumnDef("ReportID", "string", is_key=True),  # Actual matching key
-            ColumnDef("EmployeeID", "string"),
+            ColumnDef("ReportID", "string", is_key=True),  # Composite key: report ID + employee ID
+            ColumnDef("EmployeeID", "string", is_key=True),  # Composite key: report ID + employee ID
             ColumnDef("EmployeeName", "string"),
             ColumnDef("ReportDate", "date"),
             ColumnDef("MerchantName", "string"),
@@ -57,7 +57,7 @@ class ExpenseReconciliationScenario(ReconciliationScenario):
     def dataset2_schema(self) -> List[ColumnDef]:
         return [
             ColumnDef("CardTransactionID", "string"),  # Unique identifier
-            ColumnDef("CardholderEmployeeID", "string"),
+            ColumnDef("CardholderEmployeeID", "string", is_key=True),  # Composite key: cardholder + authorization code
             ColumnDef("PostingDate", "date"),
             ColumnDef("Merchant", "string"),
             ColumnDef("MCC", "string"),

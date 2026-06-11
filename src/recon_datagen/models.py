@@ -59,7 +59,12 @@ class GenerationConfig:
     one_to_n_ratio: float = 0.3  # Within potential matches, % that are 1:N aggregate groups
     min_n_splits: int = 2
     max_n_splits: int = 5
-    
+
+    # Number of non-monetary mapping keys to declare per dataset.
+    # Mirrors the get_table_keys_suggestion eval distribution (1-2 typical,
+    # up to 3 for complex scenarios). Monetary keys are always exactly 1.
+    num_mapping_keys: int = 2
+
     # Variance settings for potential matches
     amount_variance_percent: float = 0.05  # ±5% for potential matches
     date_variance_days: int = 3
@@ -100,6 +105,9 @@ class GenerationConfig:
         
         if self.max_n_splits < self.min_n_splits:
             errors.append("Maximum splits must be >= minimum splits")
+        
+        if not 1 <= self.num_mapping_keys <= 3:
+            errors.append("Number of mapping keys must be between 1 and 3")
         
         return errors
 

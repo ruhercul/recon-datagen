@@ -358,6 +358,28 @@ def ask_output_path(scenario_name: str) -> str:
     return custom_path
 
 
+def ask_num_mapping_keys() -> Optional[int]:
+    """Ask user how many non-monetary mapping keys to declare per dataset."""
+    console.print("\n[bold cyan]Mapping Key Configuration[/bold cyan]")
+    console.print(
+        "Choose how many non-monetary mapping keys each dataset declares. "
+        "Monetary keys are always exactly 1.\n"
+    )
+
+    presets = [
+        questionary.Choice(title="1 key  (single unique reference key)", value=1),
+        questionary.Choice(title="2 keys (composite: reference + date) [default]", value=2),
+        questionary.Choice(title="3 keys (composite + allocation key, complex)", value=3),
+    ]
+
+    return questionary.select(
+        "How many mapping keys should each dataset declare?",
+        choices=presets,
+        default=presets[1],
+        style=CUSTOM_STYLE,
+    ).ask()
+
+
 def ask_seed() -> Optional[int]:
     """Ask user for random seed (for reproducibility)."""
     use_seed = questionary.confirm(
@@ -382,9 +404,10 @@ def confirm_configuration(config: GenerationConfig, scenario) -> bool:
     """Display configuration summary and ask for confirmation."""
     console.print("\n")
     
-    # Get mapping keys from schema
-    dataset1_keys = [col.name for col in scenario.dataset1_schema if col.is_key]
-    dataset2_keys = [col.name for col in scenario.dataset2_schema if col.is_key]
+    # Show declared mapping keys for the configured num_mapping_keys.
+    scenario.num_mapping_keys = config.num_mapping_keys
+    dataset1_keys = scenario.active_mapping_keys1
+    dataset2_keys = scenario.active_mapping_keys2
     dataset1_monetary = [col.name for col in scenario.dataset1_schema if col.is_monetary]
     dataset2_monetary = [col.name for col in scenario.dataset2_schema if col.is_monetary]
     
@@ -395,6 +418,7 @@ def confirm_configuration(config: GenerationConfig, scenario) -> bool:
     
     table.add_row("Scenario", scenario.display_name)
     table.add_row("Source Rows", f"{config.total_source_rows:,}")
+    table.add_row("Mapping Keys", f"{config.num_mapping_keys} per dataset")
     table.add_row("", "")
     table.add_row("[bold]Datasets[/bold]", "")
     table.add_row(f"  {scenario.dataset1_name}", f"Keys: {', '.join(dataset1_keys)}")
@@ -517,6 +541,11 @@ def interactive_mode():
         console.print("\n[yellow]Generation cancelled.[/yellow]")
         return
     
+    num_mapping_keys = ask_num_mapping_keys()
+    if num_mapping_keys is None:
+        console.print("\n[yellow]Generation cancelled.[/yellow]")
+        return
+    
     output_path = ask_output_path(scenario)
     if output_path is None:
         console.print("\n[yellow]Generation cancelled.[/yellow]")
@@ -535,6 +564,7 @@ def interactive_mode():
         max_n_splits=max_splits,
         amount_variance_percent=amount_var,
         date_variance_days=date_var,
+        num_mapping_keys=num_mapping_keys,
         output_path=output_path,
         seed=seed,
     )
@@ -562,6 +592,7 @@ def quick_mode(
     rows: int,
     match_pct: float = 0.60,
     potential_pct: float = 0.25,
+    num_mapping_keys: int = 2,
     output: Optional[str] = None,
     seed: Optional[int] = None
 ):
@@ -581,6 +612,7 @@ def quick_mode(
         total_source_rows=rows,
         match_percent=match_pct / 100 if match_pct > 1 else match_pct,
         potential_percent=potential_pct / 100 if potential_pct > 1 else potential_pct,
+        num_mapping_keys=num_mapping_keys,
         output_path=output_path,
         seed=seed,
     )
@@ -640,6 +672,13 @@ Examples:
         help='Potential match percentage (default: 25)'
     )
     parser.add_argument(
+        '--num-keys', '-k',
+        type=int,
+        default=2,
+        choices=[1, 2, 3],
+        help='Number of non-monetary mapping keys per dataset, 1-3 (default: 2)'
+    )
+    parser.add_argument(
         '--output', '-o',
         type=str,
         help='Output file path'
@@ -672,6 +711,7 @@ Examples:
             rows=args.rows,
             match_pct=args.match_pct,
             potential_pct=args.potential_pct,
+            num_mapping_keys=args.num_keys,
             output=args.output,
             seed=args.seed
         )

@@ -45,8 +45,8 @@ class PayrollReconciliationScenario(ReconciliationScenario):
         return [
             ColumnDef("EmployeeID", "string"),
             ColumnDef("EmployeeName", "string"),
-            ColumnDef("PayPeriod", "string"),
-            ColumnDef("PayrollRunID", "string", is_key=True),  # Actual matching key
+            ColumnDef("PayPeriod", "string", is_key=True),  # Composite key: pay period + payroll run ID
+            ColumnDef("PayrollRunID", "string", is_key=True),  # Composite key: pay period + payroll run ID
             ColumnDef("GrossPay", "decimal"),
             ColumnDef("NetPay", "decimal", is_monetary=True),
             ColumnDef("TaxesWithheld", "decimal"),
@@ -56,8 +56,8 @@ class PayrollReconciliationScenario(ReconciliationScenario):
     @property
     def dataset2_schema(self) -> List[ColumnDef]:
         return [
-            ColumnDef("PayPeriod", "string"),
-            ColumnDef("JournalID", "string", is_key=True),  # Actual matching key
+            ColumnDef("PayPeriod", "string", is_key=True),  # Composite key: pay period + journal ID
+            ColumnDef("JournalID", "string", is_key=True),  # Composite key: pay period + journal ID
             ColumnDef("SalaryExpense", "decimal"),
             ColumnDef("TaxExpense", "decimal"),
             ColumnDef("BenefitsExpense", "decimal"),

@@ -1,0 +1,51 @@
+﻿TransactionID,PostingDate,DocumentNumber,PayeeName,Description,Currency,Amount,DebitCredit
+TXN00000001,2025-11-08,REF-2024-1,"Mitchell, Ford and Mayo","ACH from Mitchell, Ford and Mayo",GBP,7972.14,C
+TXN00000003,2026-05-15,REF-2025-2,Brewer-Peterson,Payment to Brewer-Peterson,USD,7048.56,D
+TXN00000005,2026-05-02,REF-2024-3,Rodriguez-Castaneda,ACH from Rodriguez-Castaneda,USD,27869.56,C
+TXN00000007,2026-05-26,REF-2025-4,Curtis-Thompson,Wire from Curtis-Thompson,GBP,26771.08,C
+TXN00000009,2025-10-27,REF-2023-5,Daniels-Green,Wire from Daniels-Green,GBP,46279.8,C
+TXN00000011,2025-11-19,REF-2023-6,"Daniels, Brown and Perry","Wire to Daniels, Brown and Perry",USD,82198.08,D
+TXN00000013,2025-12-30,REF-2023-7,"Wong, Turner and Barrera","Wire from Wong, Turner and Barrera",EUR,65578.32,C
+TXN00000015,2026-03-13,REF-2023-8,"Young, Oneal and Hartman","Check to Young, Oneal and Hartman",GBP,74524.4,D
+TXN00000017,2025-08-20,REF-2024-9,Nelson-Johnson,Payment to Nelson-Johnson,USD,22010.14,D
+TXN00000019,2026-05-25,REF-2025-10,Clayton-Fernandez,Check to Clayton-Fernandez,USD,16082.2,D
+TXN00000021,2026-02-05,DOC-TXN-2025-855731,Reyes-Christensen,Receipt from Reyes-Christensen,GBP,24279.85,C
+TXN00000022,2026-05-05,REF-2025-11,Murphy LLC,Check to Murphy LLC,USD,75112.69,D
+TXN00000024,2025-10-23,REF-2023-12,Stewart and Sons,Receipt from Stewart and Sons,USD,95386.21,C
+TXN00000026,2025-12-19,REF-2025-13,"Leonard, Green and Contreras","Receipt from Leonard, Green and Contreras",GBP,19971.22,C
+TXN00000028,2025-12-13,REF-2024-14,Fowler LLC,Wire from Fowler LLC,USD,2045.73,C
+TXN00000030,2025-07-24,REF-2025-15,"Hubbard, Powell and Rogers","Wire from Hubbard, Powell and Rogers",GBP,94700.25,C
+TXN00000032,2025-09-27,REF-2025-16,"Sanders, Smith and Little","ACH from Sanders, Smith and Little",USD,42371.48,C
+TXN00000034,2026-01-28,REF-2024-17,Perez and Sons,Payment to Perez and Sons,USD,89971.45,D
+TXN00000036,2026-04-08,REF-2025-18,Calderon Group,Payment to Calderon Group,USD,55436.76,D
+TXN00000038,2025-07-17,REF-2023-19,Webb LLC,Check to Webb LLC,USD,85977.58,D
+TXN00000040,2026-03-30,REF-2023-20,Bell Group,Check to Bell Group,USD,72362.92,D
+TXN00000042,2026-01-17,REF-2023-21,"Little, French and Marsh","Check to Little, French and Marsh",EUR,9783.39,D
+TXN00000044,2025-12-01,REF-2023-22,Wright-Morris,Wire to Wright-Morris,USD,40321.87,D
+TXN00000046,2025-07-19,REF-2024-23,Mendez and Sons,Payment to Mendez and Sons,GBP,46316.54,D
+TXN00000048,2025-10-10,REF-2023-24,"Boyle, Rosario and Ramirez","Check to Boyle, Rosario and Ramirez",USD,96902.73,D
+TXN00000051,2026-03-22,REF-2025-25,Jones LLC,Wire from Jones LLC,EUR,99542.73,C
+TXN00000053,2025-09-30,DOC-PO-2023-884309,"Gregory, Hayes and Mcdaniel","ACH to Gregory, Hayes and Mcdaniel",USD,14521.59,D
+TXN00000054,2026-02-23,REF-2023-26,Lopez-Miller,Wire from Lopez-Miller,GBP,58459.34,C
+TXN00000056,2025-07-16,REF-2023-27,Harris-Wright,Check to Harris-Wright,USD,85149.12,D
+TXN00000058,2025-07-01,REF-2023-28,"Warren, Stone and Cardenas","ACH from Warren, Stone and Cardenas",EUR,57934.01,C
+TXN00000060,2025-10-11,REF-2025-29,Hawkins-Holloway,ACH to Hawkins-Holloway,USD,71647.56,D
+TXN00000063,2025-08-17,REF-2023-30,West Inc,Wire from West Inc,USD,50637.88,C
+TXN00000065,2025-08-30,DOC-PAY-2024-741390,Hess-Bond,Receipt from Hess-Bond,GBP,20860.25,C
+TXN00000066,2026-05-16,REF-2025-31,Ramos-Montes,ACH to Ramos-Montes,USD,30007.94,D
+TXN00000068,2025-10-28,REF-2025-32,Shaw and Sons,Wire to Shaw and Sons,USD,55367.04,D
+TXN00000070,2025-10-17,DOC-INV-2024-146228,"Ross, Williams and Stuart","Payment to Ross, Williams and Stuart",EUR,2398.23,D
+TXN00000071,2025-10-23,REF-2023-33,Marsh-Webb,Check to Marsh-Webb,EUR,63747.63,D
+TXN00000073,2026-05-30,REF-2023-34,Weaver-Krueger,Receipt from Weaver-Krueger,GBP,7616.86,C
+TXN00000075,2025-08-15,REF-2025-35,"Brown, Chung and Herring","Payment to Brown, Chung and Herring",USD,14894.57,D
+TXN00000077,2025-08-02,REF-2025-36,"Baker, Hudson and Lucas","Check to Baker, Hudson and Lucas",GBP,25028.02,D
+TXN00000079,2025-09-09,REF-2023-37,Thornton and Sons,Wire from Thornton and Sons,USD,86474.11,C
+TXN00000081,2025-10-16,REF-2025-38,Morris and Sons,Check to Morris and Sons,USD,86420.0,D
+TXN00000083,2026-02-01,REF-2023-39,Skinner PLC,Wire to Skinner PLC,USD,20037.33,D
+TXN00000085,2025-07-16,REF-2024-40,Gilbert-Nolan,ACH from Gilbert-Nolan,USD,32893.37,C
+TXN00000087,2026-03-12,REF-2025-41,Williams-Smith,Payment to Williams-Smith,USD,98116.85,D
+TXN00000089,2025-10-24,REF-2025-42,Rodriguez-Rogers,Check to Rodriguez-Rogers,GBP,96257.18,D
+TXN00000091,2026-01-20,DOC-PO-2023-367095,Hopkins-Thomas,Payment to Hopkins-Thomas,GBP,9691.37,D
+TXN00000092,2026-03-13,REF-2024-43,Osborn LLC,ACH from Osborn LLC,USD,268.96,C
+TXN00000094,2026-04-26,REF-2025-44,"Lee, Mason and Nash","ACH to Lee, Mason and Nash",USD,92085.01,D
+TXN00000096,2026-01-03,REF-2025-45,"Allen, Walls and Foster","Check to Allen, Walls and Foster",USD,40898.45,D
